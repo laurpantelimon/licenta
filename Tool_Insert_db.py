@@ -2,6 +2,8 @@ import ttk
 from Tkinter import *
 import pypyodbc
 import ScrolledText
+import json
+from pprint import pprint
 
 
 # #Database conection
@@ -10,6 +12,11 @@ import ScrolledText
 #                                'Database=NaturalSQL;'
 #                                'Trusted_Connection=yes;')
 # cursor2 = connection2.cursor()
+
+#JSON immporter
+with open('stackexchange_clean.json') as data_file:
+    data = json.load(data_file)
+pprint(data)
 
 #GUI Generator
 root = Tk(className ="Insert queries")
