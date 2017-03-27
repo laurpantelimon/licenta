@@ -3,7 +3,7 @@ from Tkinter import *
 import pypyodbc
 import ScrolledText
 import tkMessageBox
-from PIL import ImageTk, Image
+#from PIL import ImageTk, Image
 import json
 from pprint import pprint
 
@@ -30,11 +30,11 @@ def makemenu(win):
     edit.add_cascade(label='Actions', menu=submenu, underline=0)
 
 #Database conection
-connection2 = pypyodbc.connect('Driver={SQL Server};'
-                                'Server=.\SQLEXPRESS;'
-                                'Database=NaturalSQL;'
-                                'Trusted_Connection=yes;')
-cursor2 = connection2.cursor()
+# connection2 = pypyodbc.connect('Driver={SQL Server};'
+#                                 'Server=.\SQLEXPRESS;'
+#                                 'Database=NaturalSQL;'
+#                                 'Trusted_Connection=yes;')
+# cursor2 = connection2.cursor()
 
 
 #JSON immporter
@@ -53,7 +53,7 @@ makemenu(root)
 nlFrame = ttk.Frame(root)
 nlFrame.pack(side = 'left',fill = Y)
 scrollList = []
-for i in range(10):
+for i in range(11):
 
     scrollList.append(ScrolledText.ScrolledText(
     nlFrame,
@@ -64,6 +64,9 @@ for i in range(10):
     ))
     scrollList[i].pack(side='top', fill=Y)
 scrollList[0].insert(INSERT,data[json_index]['title'])
+scrollList[10].insert(INSERT,data[json_index]['url'])
+scrollList[10].config(state=DISABLED)
+
 
 l1 = Label(root, text="Natural Language Query",font = ("Helvetica",12))
 l1.pack(side = 'left')
@@ -94,16 +97,54 @@ w3.pack(side = 'top')
 l2 = Label(root, text="Name",font = ("Helvetica",12))
 l2.pack(side = 'top')
 
+'''Change query value'''
+def skip_command(w2,data,w3):
+    global json_index
+    result = tkMessageBox.askquestion("Skip query", "Are You Sure?", icon='warning')
+    if result == 'yes':
+        json_index += 1
+        counter.set(json_index)
+        w2.delete('1.0',END)
+        w2.insert(INSERT,data[json_index]['snippet'])
+        for i in range(10):
+            w3[i].delete('1.0', END)
+        w3[0].insert(INSERT, data[json_index]['title'])
+
 '''Create checkbox'''
 var1 = IntVar()
 cb = Checkbutton(root, text="Complex query", variable=var1)
 cb.pack(side = 'top',fill = Y)
 
+
+'''Create index input'''
+indexInputFrame = ttk.Frame(root)
+indexInputFrame.pack(side = 'top', fill = Y)
+
 '''Display current index'''
 counter = IntVar()
 counter.set(json_index)
-l2 = Label(root, textvariable=counter,font = ("Helvetica",12))
-l2.pack(side = 'top')
+l2 = Label(indexInputFrame, textvariable=counter,font = ("Helvetica",12))
+l2.pack(side = 'left')
+
+indexEdit =  ScrolledText.ScrolledText(
+    indexInputFrame,
+    wrap   = 'word',  # wrap text at full words only
+    width  = 10,      # characters
+    height = 1,       # text lines
+    bg='light blue'   # background color of edit area)
+)
+indexEdit.pack(side = 'left')
+
+def set_index(index):
+    global json_index
+    json_index = int(index) - 1
+    l2.config(text = index)
+    skip_command(w2,data,scrollList)
+
+jump = Button(indexInputFrame, text="JUMP",font = ("Helvetica",15),command=lambda : set_index(indexEdit.get('1.0', END)), height = 5, width = 10, bg = 'dark grey')
+jump.pack(side = 'left')
+
+
 
 '''Create buttons'''
 buttonsFrame = ttk.Frame(root)
@@ -120,19 +161,6 @@ def next_command(w2,data,w3):
         w3[i].delete('1.0', END)
     w3[0].insert(INSERT, data[json_index]['title'])
 
-'''Change query value'''
-def skip_command(w2,data,w3):
-    global json_index
-    result = tkMessageBox.askquestion("Skip query", "Are You Sure?", icon='warning')
-    if result == 'yes':
-        json_index += 1
-        counter.set(json_index)
-        w2.delete('1.0',END)
-        w2.insert(INSERT,data[json_index]['snippet'])
-        for i in range(10):
-            w3[i].delete('1.0', END)
-        w3[0].insert(INSERT, data[json_index]['title'])
-
 '''Insert values into database'''
 def insert_command():
     result = tkMessageBox.askquestion("Insert values", "Are You Sure?", icon='warning')
@@ -142,14 +170,14 @@ def insert_command():
                 user_name = w3.get('1.0', END)
                 difficult_query = int(var1.get())
                 natural_query = scrollList[i].get('1.0', END)
-                print natural_query
+                #print natural_query
                 sql_query = w2.get('1.0', END)
                 query_id = data[json_index]['url']
 
                 queryForUpdate = "INSERT INTO dbo.Adnotation (QueryID,Input_User,Natural_Query,Sql_Query,Is_difficult) VALUES (?,?,?,?,?)"
 
-                cursor2.execute(queryForUpdate,(query_id,user_name,natural_query,sql_query,difficult_query))
-                cursor2.commit()
+                # cursor2.execute(queryForUpdate,(query_id,user_name,natural_query,sql_query,difficult_query))
+                # cursor2.commit()
     next_command(w2,data,scrollList)
 
 insert = Button(buttonsFrame, text="INSERT",font = ("Helvetica",15),command=insert_command, height = 5, width = 10, bg = 'dark grey')
@@ -162,5 +190,5 @@ skip.pack(side = 'left')
 
 
 root.mainloop()
-cursor2.close()
-connection2.close()
+# cursor2.close()
+# connection2.close()
