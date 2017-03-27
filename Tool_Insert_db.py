@@ -3,19 +3,24 @@ from Tkinter import *
 import pypyodbc
 import ScrolledText
 import tkMessageBox
-#from PIL import ImageTk, Image
+from PIL import ImageTk, Image
 import json
 from pprint import pprint
 
 global json_index
-json_index = 200
+json_index = 0
 
 def db_schema():
     window = Toplevel(root)
-    img = ImageTk.PhotoImage(Image.open("D://robertv//Fac//Licenta//db_schema.png"))
+
+    original = Image.open("D://robertv//Fac//Licenta//db_schema.png")
+    resized = original.resize((1200, 800), Image.ANTIALIAS)
+    img = ImageTk.PhotoImage(resized)
+
     panel = Label(window, image=img)
     panel.pack(side="bottom", fill="both", expand="yes")
     root.wait_window(window)
+
 
 def makemenu(win):
     top = Menu(win)  # win=top-level window
@@ -30,11 +35,11 @@ def makemenu(win):
     edit.add_cascade(label='Actions', menu=submenu, underline=0)
 
 #Database conection
-# connection2 = pypyodbc.connect('Driver={SQL Server};'
-#                                 'Server=.\SQLEXPRESS;'
-#                                 'Database=NaturalSQL;'
-#                                 'Trusted_Connection=yes;')
-# cursor2 = connection2.cursor()
+connection2 = pypyodbc.connect('Driver={SQL Server};'
+                                'Server=.\SQLEXPRESS;'
+                                'Database=NaturalSQL;'
+                                'Trusted_Connection=yes;')
+cursor2 = connection2.cursor()
 
 
 #JSON immporter
@@ -124,16 +129,8 @@ indexInputFrame.pack(side = 'top', fill = Y)
 counter = IntVar()
 counter.set(json_index)
 l2 = Label(indexInputFrame, textvariable=counter,font = ("Helvetica",12))
-l2.pack(side = 'left')
+l2.pack(side = 'top')
 
-indexEdit =  ScrolledText.ScrolledText(
-    indexInputFrame,
-    wrap   = 'word',  # wrap text at full words only
-    width  = 10,      # characters
-    height = 1,       # text lines
-    bg='light blue'   # background color of edit area)
-)
-indexEdit.pack(side = 'left')
 
 def set_index(index):
     global json_index
@@ -141,9 +138,10 @@ def set_index(index):
     l2.config(text = index)
     skip_command(w2,data,scrollList)
 
-jump = Button(indexInputFrame, text="JUMP",font = ("Helvetica",15),command=lambda : set_index(indexEdit.get('1.0', END)), height = 5, width = 10, bg = 'dark grey')
-jump.pack(side = 'left')
-
+indexEdit = Text(root, height=2, width=10)
+indexEdit.pack(side = 'top')
+jump = Button(indexInputFrame, text="JUMP",font = ("Helvetica",12),command=lambda : set_index(indexEdit.get('1.0', END)), height = 3, width = 10, bg = 'dark grey')
+jump.pack(side = 'top')
 
 
 '''Create buttons'''
@@ -176,8 +174,8 @@ def insert_command():
 
                 queryForUpdate = "INSERT INTO dbo.Adnotation (QueryID,Input_User,Natural_Query,Sql_Query,Is_difficult) VALUES (?,?,?,?,?)"
 
-                # cursor2.execute(queryForUpdate,(query_id,user_name,natural_query,sql_query,difficult_query))
-                # cursor2.commit()
+                cursor2.execute(queryForUpdate,(query_id,user_name,natural_query,sql_query,difficult_query))
+                cursor2.commit()
     next_command(w2,data,scrollList)
 
 insert = Button(buttonsFrame, text="INSERT",font = ("Helvetica",15),command=insert_command, height = 5, width = 10, bg = 'dark grey')
@@ -190,5 +188,5 @@ skip.pack(side = 'left')
 
 
 root.mainloop()
-# cursor2.close()
-# connection2.close()
+cursor2.close()
+connection2.close()
